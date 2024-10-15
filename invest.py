@@ -179,6 +179,14 @@ def cruzamento(pai1, pai2):
 
     return filho1, filho2
 
+# Função para gerar o genoma inicial de portfólios com 34 ativos
+genoma_inicial = np.array([
+    0.00, 0.00, 0.20, 0.00, 0.05, 0.00, 0.03, 0.00, 0.00, 0.03,
+    0.05, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.05, 0.05, 0.06,
+    0.10, 0.00, 0.00, 0.00, 0.05, 0.05, 0.05, 0.05, 0.00, 0.05,
+    0.05, 0.03, 0.05, 0.00
+])
+
 # Função de mutação ajustada
 def mutacao(portfolio, taxa_mutacao, limite_max=0.25):
     if np.random.random() < taxa_mutacao:
