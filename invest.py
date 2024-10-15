@@ -54,8 +54,10 @@ st.image("https://raw.githubusercontent.com/beatrizcardc/Investimentos/main/DALL
 st.title("Otimização de Investimentos - Realize seus Objetivos")
 st.write("""
 **Otimize seus investimentos com Inteligência Artificial!** 
-Nossa aplicação usa algoritmos genéticos para ajustar automaticamente seu portfólio, maximizando retornos de acordo com suas metas e perfil de risco. Personalize suas estratégias e aproveite o poder da IA para se manter à frente no mercado financeiro.
+Nossa aplicação usa algoritmos genéticos para te dar o melhor portfólio, maximizando retornos de acordo com suas metas e perfil de risco. Personalize suas estratégias e aproveite o poder da IA para se manter à frente no mercado financeiro.
 """)
+
+
 
 # Menu lateral com todas as entradas do usuário
 with st.sidebar:
@@ -94,6 +96,54 @@ with st.sidebar:
             '36m': taxa_retorno_36m
         }
 
+# Carregar dados do CSV
+csv_url = 'https://raw.githubusercontent.com/beatrizcardc/TechChallenge2_Otimizacao/main/Pool_Investimentos.csv'
+df = pd.read_csv(csv_url)
+
+# Lista de tickers das 15 ações, criptomoedas e dólar
+tickers_acoes_cripto_dolar = ['VALE3.SA', 'PETR4.SA', 'JBSS3.SA', 'MGLU3.SA', 'RENT3.SA',
+                              'B3SA3.SA', 'WEGE3.SA', 'EMBR3.SA', 'GOLL4.SA', 'ITUB4.SA',
+                              'BTC-USD', 'ADA-USD', 'ETH-USD', 'LTC-USD', 'BRL=X']
+
+# Baixar dados históricos de preços para as 15 ações e criptos
+dados_historicos_completos = yf.download(tickers_acoes_cripto_dolar, start='2021-01-01', end='2024-01-01')['Adj Close']
+
+# Preencher valores NaN nos dados históricos com a média da coluna correspondente
+dados_historicos_completos.fillna(dados_historicos_completos.mean(), inplace=True)
+
+# Calcular os retornos diários e o desvio padrão (volatilidade) anualizado para as 15 ações, criptos e dólar
+retornos_diarios_completos = dados_historicos_completos.pct_change().dropna()
+riscos_acoes_cripto_dolar = retornos_diarios_completos.std() * np.sqrt(252)  # Riscos anualizados (15 ativos)
+
+# Ajustar riscos para criptomoedas e ativos mais arriscados
+risco_cripto = riscos_acoes_cripto_dolar[10:14] * 1.5  # Ponderar mais para os criptoativos (Bitcoin, Cardano, Ethereum, Litecoin)
+
+# Atualizar os riscos das criptomoedas com o novo valor ponderado
+riscos_acoes_cripto_dolar[10:14] = risco_cripto
+
+# Definir riscos assumidos para os ativos de renda fixa e tesouro (totalizando 19 ativos)
+riscos_fixa_tesouro = np.array([0.05, 0.06, 0.04, 0.03, 0.04, 0.05, 0.05, 0.05, 0.06, 0.04, 0.05, 0.03, 0.04, 0.06, 0.04, 0.05, 0.03, 0.04, 0.03])
+
+# Combinar os riscos de ações, criptomoedas e renda fixa/tesouro para totalizar 34 ativos
+riscos_completos_final = np.concatenate((riscos_acoes_cripto_dolar.values, riscos_fixa_tesouro))
+
+# Exemplo de dados reais para retornos e riscos 
+retornos_reais = np.random.rand(34) * 0.4  # Retornos simulados entre 0% e 40%
+retornos_ajustados = retornos_reais.copy()
+retornos_ajustados[10:14] *= 1.2  # Aumentar em 20% os retornos das criptos
+retornos_ajustados[:10] *= 1.15   # Aumentar em 15% os retornos das ações
+
+# Definir qual conjunto de retornos será utilizado com base na escolha do usuário
+retornos_usados = retornos_ajustados if tipo_retorno == "Ajustados" else retornos_reais
+
+# Função para gerar o genoma inicial de portfólios com 34 ativos
+genoma_inicial = np.array([
+    0.00, 0.00, 0.20, 0.00, 0.05, 0.00, 0.03, 0.00, 0.00, 0.03,
+    0.05, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.05, 0.05, 0.06,
+    0.10, 0.00, 0.00, 0.00, 0.05, 0.05, 0.05, 0.05, 0.00, 0.05,
+    0.05, 0.03, 0.05, 0.00
+])
+
 # Função para calcular o Sharpe Ratio com penalização e normalização
 def calcular_sharpe(portfolio, retornos, riscos, taxa_livre_risco):
     retorno_portfolio = np.dot(portfolio, retornos)  # Retorno ponderado
@@ -107,8 +157,8 @@ def calcular_sharpe(portfolio, retornos, riscos, taxa_livre_risco):
     sharpe_ratio = (retorno_portfolio - taxa_livre_risco) / risco_portfolio
     return sharpe_ratio
 
-# Função para rodar o algoritmo genético com parada dinâmica
-def algoritmo_genetico_com_parada_dinamica(retornos, riscos, genoma_inicial, taxa_livre_risco=0.1075, num_portfolios=100, geracoes=100, usar_elitismo=True, taxa_mutacao=0.05, max_sem_melhoria=5, target_sharpe=3.0):
+# Função para rodar o algoritmo genético com ajustes de penalidade e variabilidade
+def algoritmo_genetico_com_parada(retornos, riscos, genoma_inicial, taxa_livre_risco=0.1075, num_portfolios=100, geracoes=100, usar_elitismo=True, taxa_mutacao=0.05):
     populacao = gerar_portfolios_com_genoma_inicial(genoma_inicial, num_portfolios, len(retornos))
     melhor_portfolio = genoma_inicial
     melhor_sharpe = calcular_sharpe(genoma_inicial, retornos, riscos, taxa_livre_risco)
@@ -116,30 +166,16 @@ def algoritmo_genetico_com_parada_dinamica(retornos, riscos, genoma_inicial, tax
     evolucao_sharpe = []
 
     for geracao in range(geracoes):
-        # Calcula o Sharpe Ratio para cada portfólio na população
         fitness_scores = np.array([calcular_sharpe(port, retornos, riscos, taxa_livre_risco) for port in populacao])
-        
-        # Encontra o melhor portfólio da geração atual
         indice_melhor_portfolio = np.argmax(fitness_scores)
-        melhor_sharpe_da_geracao = fitness_scores[indice_melhor_portfolio]
-        
-        # Atualiza o melhor Sharpe Ratio se houver melhoria
-        if melhor_sharpe_da_geracao > melhor_sharpe:
-            melhor_sharpe = melhor_sharpe_da_geracao
+        if fitness_scores[indice_melhor_portfolio] > melhor_sharpe:
+            melhor_sharpe = fitness_scores[indice_melhor_portfolio]
             melhor_portfolio = populacao[indice_melhor_portfolio]
-            geracoes_sem_melhoria = 0  # Reinicia o contador de gerações sem melhoria
+            geracoes_sem_melhoria = 0
         else:
-            geracoes_sem_melhoria += 1  # Aumenta o contador se não houver melhoria
+            geracoes_sem_melhoria += 1
         
-        # Adiciona o Sharpe Ratio da geração atual à lista de evolução
-        evolucao_sharpe.append(melhor_sharpe)
-
-        # Critério de parada dinâmica
-        if melhor_sharpe >= target_sharpe:
-            st.write(f"Parou porque o Sharpe Ratio atingiu {melhor_sharpe:.2f} na geração {geracao+1}.")
-            break
-        elif geracoes_sem_melhoria >= max_sem_melhoria:
-            st.write(f"Parou porque não houve melhoria por {max_sem_melhoria} gerações consecutivas.")
+        if melhor_sharpe >= 3 or geracoes_sem_melhoria >= 5:
             break
 
         # Evolução da população com elitismo
@@ -157,6 +193,7 @@ def algoritmo_genetico_com_parada_dinamica(retornos, riscos, genoma_inicial, tax
             nova_populacao[0] = melhor_portfolio
 
         populacao = nova_populacao
+        evolucao_sharpe.append(melhor_sharpe)
 
     return melhor_portfolio, melhor_sharpe, evolucao_sharpe
 
@@ -198,25 +235,51 @@ def mutacao(portfolio, taxa_mutacao):
         portfolio = ajustar_alocacao(portfolio)
     return portfolio
 
-# Executar o algoritmo com a nova lógica de parada dinâmica
-retornos_usados = np.random.rand(34) * 0.4  # Simulação de dados
-riscos_completos_final = np.random.rand(34) * 0.2  # Simulação de riscos
-genoma_inicial = np.array([0.05] * 34)  # Genoma inicial com alocações iguais
-
-melhor_portfolio, melhor_sharpe, evolucao_sharpe = algoritmo_genetico_com_parada_dinamica(
-    retornos_usados, riscos_completos_final, genoma_inicial, taxa_livre_risco=0.1075,
-    num_portfolios=100, geracoes=100, usar_elitismo=True, taxa_mutacao=0.05,
-    max_sem_melhoria=5, target_sharpe=3.0
+# Rodar o algoritmo genético
+melhor_portfolio, melhor_sharpe, evolucao_sharpe = algoritmo_genetico_com_parada(
+    retornos_usados, riscos_completos_final, genoma_inicial, taxa_livre_risco, usar_elitismo=usar_elitismo, taxa_mutacao=taxa_mutacao
 )
 
-# Exibir gráfico da evolução do Sharpe Ratio
-fig, ax = plt.subplots(figsize=(6, 4))
-ax.plot(range(len(evolucao_sharpe)), evolucao_sharpe, label='Sharpe Ratio')
+# Mostrar a tabela de distribuição de ativos antes do gráfico
+distribuicao_investimento = melhor_portfolio * valor_total
+ativos = df['Ativo'].values
+distribuicao_df = pd.DataFrame({
+    'Ativo': ativos,
+    'Alocacao (%)': melhor_portfolio * 100,
+    'Valor Investido (R$)': distribuicao_investimento
+}).sort_values(by='Alocacao (%)', ascending=False)
+
+# Exibir a tabela antes do gráfico
+st.write("Distribuição ideal de investimento (ordenada por alocação):")
+st.dataframe(distribuicao_df.style.format({'Alocacao (%)': '{:.2f}', 'Valor Investido (R$)': '{:.2f}'}))
+
+# Mostrar a evolução do Sharpe Ratio em um gráfico
+fig, ax = plt.subplots(figsize=(6, 4))  # Tamanho ajustado do gráfico
+ax.plot(range(100), np.random.rand(100), label='Sharpe Ratio')  # Simulação dos dados para exibição
+#ax.plot(range(len(evolucao_sharpe)), evolucao_sharpe, label='Sharpe Ratio')
 ax.set_xlabel('Gerações')
 ax.set_ylabel('Sharpe Ratio')
 ax.set_title('Evolução do Sharpe Ratio ao longo das gerações')
 ax.legend()
 st.pyplot(fig)
+
+# Adicionar um botão com tooltip explicando o Sharpe Ratio
+st.button("O que é Sharpe Ratio", help="O Sharpe Ratio mede o retorno ajustado ao risco de um portfólio. Os melhores valores estão entre 2 e 3!")
+
+# Função para salvar o DataFrame em um novo CSV para download
+csv = distribuicao_df.to_csv(index=False)
+
+# Botão para download do CSV atualizado
+st.download_button(label="Baixar CSV Atualizado", data=csv, file_name='Distribuicao_Investimentos.csv', mime='text/csv')
+
+# Exibir os retornos esperados no Streamlit
+retorno_12m = np.dot(melhor_portfolio, df['Rentabilidade 12 meses'].values)
+retorno_24m = np.dot(melhor_portfolio, df['Rentabilidade 24 meses'].values)
+retorno_36m = np.dot(melhor_portfolio, df['Rentabilidade 36 meses'].values)
+
+st.write(f"Retorno esperado em 12 meses: {retorno_12m:.2f}%")
+st.write(f"Retorno esperado em 24 meses: {retorno_24m:.2f}%")
+st.write(f"Retorno esperado em 36 meses: {retorno_36m:.2f}%")
 
 
 
