@@ -29,9 +29,6 @@ with st.sidebar:
     # Retorno ajustado ou real
     tipo_retorno = st.selectbox("Deseja usar retornos ajustados ou reais?", options=["Ajustados", "Reais"])
     
-    # Explicação do Sharpe Ratio
-    st.write("O **Sharpe Ratio** mede o retorno ajustado ao risco de um portfólio. Quanto maior, melhor.")
-    
     # Personalização das metas de retorno
     st.write("Deseja buscar um portfólio para atingir uma taxa de retorno personalizada?")
     personalizar_retorno = st.selectbox("Personalizar taxa de retorno?", options=["Não", "Sim"])
@@ -107,13 +104,6 @@ def calcular_sharpe(portfolio, retornos, riscos, taxa_livre_risco):
 
     # Calcular o Sharpe Ratio
     sharpe_ratio = (retorno_portfolio - taxa_livre_risco) / risco_portfolio
-
-    # Penalizar Sharpe Ratios muito baixos ou incentivar os maiores
-    if sharpe_ratio < 1.0:
-        sharpe_ratio = sharpe_ratio * 0.8
-    elif sharpe_ratio > 3:
-        sharpe_ratio = sharpe_ratio * 0.2
-
     return sharpe_ratio
 
 # Função para rodar o algoritmo genético com ajustes de penalidade e variabilidade
@@ -199,6 +189,19 @@ melhor_portfolio, melhor_sharpe, evolucao_sharpe = algoritmo_genetico_com_parada
     retornos_usados, riscos_completos_final, genoma_inicial, taxa_livre_risco, usar_elitismo=usar_elitismo, taxa_mutacao=taxa_mutacao
 )
 
+# Mostrar a tabela de distribuição de ativos antes do gráfico
+distribuicao_investimento = melhor_portfolio * valor_total
+ativos = df['Ativo'].values
+distribuicao_df = pd.DataFrame({
+    'Ativo': ativos,
+    'Alocacao (%)': melhor_portfolio * 100,
+    'Valor Investido (R$)': distribuicao_investimento
+}).sort_values(by='Alocacao (%)', ascending=False)
+
+# Exibir a tabela antes do gráfico
+st.write("Distribuição ideal de investimento (ordenada por alocação):")
+st.dataframe(distribuicao_df.style.format({'Alocacao (%)': '{:.2f}', 'Valor Investido (R$)': '{:.2f}'}))
+
 # Mostrar a evolução do Sharpe Ratio em um gráfico
 fig, ax = plt.subplots()
 ax.plot(range(len(evolucao_sharpe)), evolucao_sharpe, label='Sharpe Ratio')
@@ -208,22 +211,8 @@ ax.set_title('Evolução do Sharpe Ratio ao longo das gerações')
 ax.legend()
 st.pyplot(fig)
 
-# Distribuir o valor total de investimento entre os ativos com base na melhor alocação
-distribuicao_investimento = melhor_portfolio * valor_total
-
-# Criar um DataFrame para exibir a distribuição de investimento
-ativos = df['Ativo'].values  # Lista dos ativos
-distribuicao_df = pd.DataFrame({
-    'Ativo': ativos,
-    'Alocacao (%)': melhor_portfolio * 100,
-    'Valor Investido (R$)': distribuicao_investimento
-})
-
-# Ordenar o DataFrame pela coluna 'Alocacao (%)' em ordem decrescente
-distribuicao_df = distribuicao_df.sort_values(by='Alocacao (%)', ascending=False)
-
-# Exibir a tabela com pygwalker
-pyg.walk(distribuicao_df)
+# Adicionar um botão com tooltip explicando o Sharpe Ratio
+st.button("Sharpe Ratio", help="O Sharpe Ratio mede o retorno ajustado ao risco de um portfólio. Quanto maior, melhor.")
 
 # Função para salvar o DataFrame em um novo CSV para download
 csv = distribuicao_df.to_csv(index=False)
@@ -239,14 +228,6 @@ retorno_36m = np.dot(melhor_portfolio, df['Rentabilidade 36 meses'].values)
 st.write(f"Retorno esperado em 12 meses: {retorno_12m:.2f}%")
 st.write(f"Retorno esperado em 24 meses: {retorno_24m:.2f}%")
 st.write(f"Retorno esperado em 36 meses: {retorno_36m:.2f}%")
-
-# Personalização das metas de retorno
-if personalizar_retorno == "Sim":
-    if verificar_retorno(melhor_portfolio, df['Rentabilidade 12 meses'].values, df['Rentabilidade 24 meses'].values, df['Rentabilidade 36 meses'].values, metas_retorno):
-        st.write("O portfólio gerado atende às metas de retorno definidas.")
-    else:
-        st.write("O portfólio gerado não atende às metas de retorno definidas.")
-
 
 
 
