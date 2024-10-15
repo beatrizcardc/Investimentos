@@ -5,7 +5,6 @@ import yfinance as yf
 import matplotlib.pyplot as plt
 import pygwalker as pyg
 
-# Aplicando as cores ao estilo
 st.markdown("""
     <style>
         /* Cor de fundo geral da página */
@@ -17,13 +16,13 @@ st.markdown("""
             background-color: #202A30;
         }
         /* Cor de fundo da barra lateral */
-        .css-1d391kg {
+        .css-1d391kg, .css-18e3th9 {
             background-color: #202A30;
         }
         /* Ajuste do background para caixas de seleção, sliders, e inputs */
         .stSlider .st-b9, .stNumberInput input, .stSelectbox select, .stTextInput input {
-            background-color: ##202A30;
-            color: black;
+            background-color: #202A30;
+            color: white;
         }
         /* Estilo dos títulos */
         h1, h2, h3, h4 {
