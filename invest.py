@@ -226,10 +226,15 @@ distribuicao_df = pd.DataFrame({
     'Ativo': ativos,
     'Alocacao (%)': melhor_portfolio * 100,
     'Valor Investido (R$)': distribuicao_investimento
+      
 })
 
+# Ordenar o DataFrame pela coluna 'Alocacao (%)' em ordem decrescente
+distribuicao_df = distribuicao_df.sort_values(by='Alocacao (%)', ascending=False)
+
+
 # Exibir a distribuição ideal do investimento no Streamlit
-st.write("Distribuição ideal de investimento:")
+st.write("Distribuição ideal de investimento (ordenada por alocação):")
 st.dataframe(distribuicao_df.style.format({'Alocacao (%)': '{:.2f}', 'Valor Investido (R$)': '{:.2f}'}))
 
 # Função para salvar o DataFrame em um novo CSV para download
