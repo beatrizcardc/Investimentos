@@ -5,11 +5,22 @@ import yfinance as yf
 import matplotlib.pyplot as plt
 import pygwalker as pyg
 
+import streamlit as st
+import pandas as pd
+import numpy as np
+import yfinance as yf
+import matplotlib.pyplot as plt
+import pygwalker as pyg
+
 # Aplicando as cores ao estilo
 st.markdown("""
     <style>
-        /* Cor de fundo geral */
-        .main {
+        /* Cor de fundo geral da página */
+        body {
+            background-color: #002244;
+        }
+        /* Ajuste para o container principal de Streamlit */
+        .stApp {
             background-color: #002244;
         }
         /* Estilo dos títulos */
@@ -27,10 +38,14 @@ st.markdown("""
             border-radius: 10px;
             font-size: 16px;
         }
-        /* Caixa de seleção e outros inputs */
+        /* Inputs personalizados (slider, selectbox, etc.) */
         .stTextInput, .stNumberInput, .stSelectbox, .stSlider {
             background-color: #C0C0C0;
             color: black;
+        }
+        /* Ajuste da cor de fundo dos widgets */
+        .stSidebar {
+            background-color: #002244;
         }
     </style>
 """, unsafe_allow_html=True)
@@ -38,14 +53,14 @@ st.markdown("""
 # Adicionando o logo
 st.image("https://raw.githubusercontent.com/beatrizcardc/Investimentos/main/DALL%C2%B7E%202024-10-15%2016.21.51%20-%20A%20modern%20and%20sleek%20logo%20for%20'Invest%20GenAi'%2C%20combining%20elements%20of%20artificial%20intelligence%20and%20finance.%20The%20logo%20should%20feature%20the%20name%20'Invest%20GenAi'.webp", width=200)
 
-
-
 # Título da aplicação e explicação de marketing
 st.title("Otimização de Investimentos - Realize seus Objetivos")
 st.write("""
 **Otimize seus investimentos com Inteligência Artificial!** 
 Nossa aplicação usa algoritmos genéticos para ajustar automaticamente seu portfólio, maximizando retornos de acordo com suas metas e perfil de risco. Personalize suas estratégias e aproveite o poder da IA para se manter à frente no mercado financeiro.
 """)
+
+
 
 # Menu lateral com todas as entradas do usuário
 with st.sidebar:
