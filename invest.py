@@ -86,6 +86,14 @@ retornos_ajustados[:10] *= 1.15   # Aumentar em 15% os retornos das ações
 # Definir qual conjunto de retornos será utilizado com base na escolha do usuário
 retornos_usados = retornos_ajustados if tipo_retorno == "Ajustados" else retornos_reais
 
+# Função para gerar o genoma inicial de portfólios com 34 ativos
+genoma_inicial = np.array([
+    0.00, 0.00, 0.20, 0.00, 0.05, 0.00, 0.03, 0.00, 0.00, 0.03,
+    0.05, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.05, 0.05, 0.06,
+    0.10, 0.00, 0.00, 0.00, 0.05, 0.05, 0.05, 0.05, 0.00, 0.05,
+    0.05, 0.03, 0.05, 0.00
+])
+
 # Função para calcular o Sharpe Ratio
 def calcular_sharpe(portfolio, retornos, riscos, taxa_livre_risco):
     retorno_portfolio = np.dot(portfolio, retornos)
