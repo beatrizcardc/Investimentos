@@ -7,29 +7,24 @@ import pygwalker as pyg
 
 st.markdown("""
     <style>
-        /* Cor de fundo geral da página */
-        body {
-            background-color: #202A30; 
-        }
-        /* Ajuste para o container principal de Streamlit */
-        .stApp {
-            background-color: #202A30;
-        }
         /* Cor de fundo da barra lateral */
-        .css-1d391kg, .css-1n543e5 {
+        .css-1d391kg {  /* Classe da barra lateral */
             background-color: #202A30 !important;
         }
-        /* Ajuste do background para caixas de seleção, sliders, e inputs */
-        .stSlider, .stNumberInput, .stSelectbox, .stTextInput {
+        .css-qrbaxs {  /* Ajuste adicional para a barra lateral */
             background-color: #202A30 !important;
-            color: white;
         }
-        /* Estilo dos títulos e subtítulos */
+        /* Ajuste do background para caixas de seleção, sliders, e inputs na barra lateral */
+        .css-1r2n5yc, .css-1f8sh0n, .css-ffhzg2 {
+            background-color: #202A30 !important;
+            color: white !important;
+        }
+        /* Estilo dos textos na barra lateral */
+        .css-1v0mbdj p, .css-1v0mbdj label {
+            color: #C0C0C0 !important;
+        }
+        /* Estilo dos títulos */
         h1, h2, h3, h4 {
-            color: #C0C0C0;
-        }
-        /* Estilo dos textos */
-        p, label {
             color: #C0C0C0;
         }
         /* Botões personalizados */
@@ -39,14 +34,8 @@ st.markdown("""
             border-radius: 10px;
             font-size: 16px;
         }
-        /* Tamanho do gráfico */
-        .stPlotlyChart {
-            height: 200px;
-        }
     </style>
 """, unsafe_allow_html=True)
-
-
 
 
 # Adicionando o logo
