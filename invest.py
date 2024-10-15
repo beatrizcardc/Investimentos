@@ -201,6 +201,14 @@ def algoritmo_genetico_com_genoma_inicial(retornos, riscos, genoma_inicial, taxa
 
     return melhor_portfolio
 
+# Função para gerar o genoma inicial de portfólios com 34 ativos
+genoma_inicial = np.array([
+    0.00, 0.00, 0.20, 0.00, 0.05, 0.00, 0.03, 0.00, 0.00, 0.03,
+    0.05, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.05, 0.05, 0.06,
+    0.10, 0.00, 0.00, 0.00, 0.05, 0.05, 0.05, 0.05, 0.00, 0.05,
+    0.05, 0.03, 0.05, 0.00
+])
+
 # Rodar o algoritmo genético com o genoma inicial fixo
 melhor_portfolio = algoritmo_genetico_com_genoma_inicial(
     retornos_usados,  # Usar o conjunto de retornos selecionado pelo usuário
