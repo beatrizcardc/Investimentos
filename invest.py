@@ -5,8 +5,17 @@ import yfinance as yf
 import matplotlib.pyplot as plt
 import pygwalker as pyg
 
+# Aplicando as cores ao estilo
 st.markdown("""
     <style>
+        /* Cor de fundo geral da página */
+        body {
+            background-color: #202A30; 
+        }
+        /* Ajuste para o container principal de Streamlit */
+        .stApp {
+            background-color: #202A30;
+        }
         /* Cor de fundo da barra lateral */
         [data-testid="stSidebar"] {
             background-color: #202A30 !important;
@@ -31,14 +40,15 @@ st.markdown("""
             border-radius: 10px;
             font-size: 16px;
         }
+        /* Tamanho do gráfico */
+        .stPlotlyChart {
+            height: 200px;
+        }
     </style>
 """, unsafe_allow_html=True)
 
-
-
 # Adicionando o logo
-st.image("https://raw.githubusercontent.com/beatrizcardc/Investimentos/main/DALL%C2%B7E%202024-10-15%2016.21.51%20-%20A%20modern%20and%20sleek%20logo%20for%20'Invest%20GenAi'%2C%20combining%20elements%20of%20artificial%20intelligence%20and%20finance.%20The%20logo%20should%20feature%20the%20name%20'Invest%20GenAi'.webp", width=150)
-
+st.image("https://raw.githubusercontent.com/seu-usuario/seu-repositorio/path-da-imagem.png", width=200)
 
 # Título da aplicação e explicação de marketing
 st.title("Otimização de Investimentos - Realize seus Objetivos")
@@ -86,8 +96,8 @@ with st.sidebar:
 
 # Função para calcular o Sharpe Ratio com penalização e normalização
 def calcular_sharpe(portfolio, retornos, riscos, taxa_livre_risco):
-    retorno_portfolio = np.dot(portfolio, retornos)  # Retorno ponderado
-    risco_portfolio = np.sqrt(np.dot(portfolio, riscos ** 2))  # Risco ponderado
+    retorno_portfolio = np.dot(portfolio, retornos)  # Retorno ponderado do portfólio
+    risco_portfolio = np.sqrt(np.dot(portfolio, riscos ** 2))  # Risco ponderado do portfólio
 
     # Evitar divisões por zero ou risco muito baixo
     if risco_portfolio < 0.01:
@@ -95,6 +105,13 @@ def calcular_sharpe(portfolio, retornos, riscos, taxa_livre_risco):
 
     # Calcular o Sharpe Ratio
     sharpe_ratio = (retorno_portfolio - taxa_livre_risco) / risco_portfolio
+
+    # Condições de penalidade
+    if sharpe_ratio < 1.0:
+        sharpe_ratio = sharpe_ratio * 0.8  # Penaliza Sharpe Ratios baixos
+    elif sharpe_ratio > 3.0:
+        sharpe_ratio = sharpe_ratio * 0.2  # Reduz Sharpe Ratios excessivamente altos
+
     return sharpe_ratio
 
 # Função para rodar o algoritmo genético com parada dinâmica
