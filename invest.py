@@ -252,3 +252,100 @@ retorno_36m = np.dot(melhor_portfolio, retornos_36m)
 st.write(f"Retorno esperado em 12 meses: {retorno_12m:.2f}%")
 st.write(f"Retorno esperado em 24 meses: {retorno_24m:.2f}%")
 st.write(f"Retorno esperado em 36 meses: {retorno_36m:.2f}%")
+
+
+#Inicio de nova opção no código
+
+# Definir a função verificar_retorno para comparar os retornos do portfólio com as metas definidas
+def verificar_retorno(portfolio, retornos_12m, retornos_24m, retornos_36m, metas_retorno):
+    """
+    Verifica se os retornos esperados do portfólio atendem às metas de retorno definidas pelo usuário.
+    
+    Args:
+        portfolio (np.array): Alocações do portfólio.
+        retornos_12m (np.array): Retornos esperados em 12 meses para cada ativo.
+        retornos_24m (np.array): Retornos esperados em 24 meses para cada ativo.
+        retornos_36m (np.array): Retornos esperados em 36 meses para cada ativo.
+        metas_retorno (dict): Metas de retorno para 12, 24 e 36 meses definidas pelo usuário.
+    
+    Returns:
+        bool: True se o portfólio atender às metas de retorno, False caso contrário.
+    """
+    # Calcular os retornos ponderados do portfólio para 12, 24 e 36 meses
+    retorno_portfolio_12m = np.dot(portfolio, retornos_12m)
+    retorno_portfolio_24m = np.dot(portfolio, retornos_24m)
+    retorno_portfolio_36m = np.dot(portfolio, retornos_36m)
+    
+    # Verificar se os retornos do portfólio atendem às metas
+    if (retorno_portfolio_12m >= metas_retorno['12m'] and
+        retorno_portfolio_24m >= metas_retorno['24m'] and
+        retorno_portfolio_36m >= metas_retorno['36m']):
+        return True
+    return False
+
+# Definir os parâmetros iniciais do algoritmo fora do if-else
+geracoes = 100  # Número de gerações
+num_portfolios = 100  # Número de portfólios
+
+# Oferecer a opção para o usuário definir metas de retorno personalizadas
+st.write("Deseja buscar um portfólio para atingir uma taxa de retorno personalizada?")
+personalizar_retorno = st.selectbox("Personalizar taxa de retorno?", options=["Não", "Sim"])
+
+# Se o usuário escolher 'Sim', permitir a entrada de metas de retorno para 12, 24 e 36 meses
+if personalizar_retorno == "Sim":
+    taxa_retorno_12m = st.number_input("Meta de retorno em 12 meses (%)", min_value=0.0, value=10.0)
+    taxa_retorno_24m = st.number_input("Meta de retorno em 24 meses (%)", min_value=0.0, value=12.0)
+    taxa_retorno_36m = st.number_input("Meta de retorno em 36 meses (%)", min_value=0.0, value=15.0)
+
+    # Definir as metas de retorno com base na entrada do usuário
+    metas_retorno = {
+        '12m': taxa_retorno_12m,
+        '24m': taxa_retorno_24m,
+        '36m': taxa_retorno_36m
+    }
+
+    # Executar a busca por um novo portfólio que atenda às metas
+    melhor_portfolio = None
+    for geracao in range(geracoes):
+        populacao = gerar_portfolios_com_genoma_inicial(genoma_inicial, num_portfolios, len(retornos_usados))
+        for portfolio in populacao:
+            if verificar_retorno(portfolio, retornos_12m, retornos_24m, retornos_36m, metas_retorno):
+                melhor_portfolio = portfolio
+                break
+        if melhor_portfolio is not None:  # Verificar se algum portfólio foi encontrado
+            break
+
+    # Caso o algoritmo encontre um portfólio que atenda às metas, exibir os resultados
+    if melhor_portfolio is not None:
+        distribuicao_investimento = melhor_portfolio * valor_total
+        distribuicao_df = pd.DataFrame({
+            'Ativo': ativos,
+            'Alocacao (%)': melhor_portfolio * 100,
+            'Valor Investido (R$)': distribuicao_investimento
+        })
+
+        # Ordenar o DataFrame pela coluna 'Alocacao (%)' em ordem decrescente
+        distribuicao_df = distribuicao_df.sort_values(by='Alocacao (%)', ascending=False)
+
+        # Exibir a distribuição ideal do investimento no Streamlit
+        st.write("Distribuição ideal de investimento (ordenada por alocação):")
+        st.dataframe(distribuicao_df.style.format({'Alocacao (%)': '{:.2f}', 'Valor Investido (R$)': '{:.2f}'}))
+
+        retorno_12m = np.dot(melhor_portfolio, retornos_12m)
+        retorno_24m = np.dot(melhor_portfolio, retornos_24m)
+        retorno_36m = np.dot(melhor_portfolio, retornos_36m)
+
+        st.write(f"Novo retorno esperado em 12 meses: {retorno_12m:.2f}%")
+        st.write(f"Novo retorno esperado em 24 meses: {retorno_24m:.2f}%")
+        st.write(f"Novo retorno esperado em 36 meses: {retorno_36m:.2f}%")
+    else:
+        st.write("Não foi encontrado um portfólio que atenda às metas de retorno especificadas.")
+
+# Caso o usuário escolha "Não", manter o portfólio já gerado
+else:
+    st.write("Você optou por não personalizar as metas de retorno. Mantendo o portfólio atual.")
+    # Mostrar o portfólio já gerado, caso tenha sido criado anteriormente
+    if 'distribuicao_df' in locals():
+        st.dataframe(distribuicao_df.style.format({'Alocacao (%)': '{:.2f}', 'Valor Investido (R$)': '{:.2f}'}))
+    else:
+        st.write("Não há portfólio gerado para exibir.")
