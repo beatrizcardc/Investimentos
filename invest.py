@@ -16,7 +16,7 @@ st.markdown("""
             background-color: #202A30;
         }
         /* Cor de fundo da barra lateral */
-        .css-1d391kg, .css-18e3th9 {
+        .css-1d391kg, .css-1n543e5, .css-1y4p8pa, .css-1v3fvcr {
             background-color: #202A30;
         }
         /* Ajuste do background para caixas de seleção, sliders, e inputs */
@@ -45,6 +45,7 @@ st.markdown("""
         }
     </style>
 """, unsafe_allow_html=True)
+
 
 # Adicionando o logo
 st.image("https://raw.githubusercontent.com/beatrizcardc/Investimentos/main/DALL%C2%B7E%202024-10-15%2016.21.51%20-%20A%20modern%20and%20sleek%20logo%20for%20'Invest%20GenAi'%2C%20combining%20elements%20of%20artificial%20intelligence%20and%20finance.%20The%20logo%20should%20feature%20the%20name%20'Invest%20GenAi'.webp", width=150)
