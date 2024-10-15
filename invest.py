@@ -16,9 +16,14 @@ st.markdown("""
         .stApp {
             background-color: #002244;
         }
-        /* Cor de fundo do menu lateral (sidebar) */
+        /* Cor de fundo da barra lateral */
         .css-1d391kg {
             background-color: #C0C0C0;
+        }
+        /* Ajuste do background para caixas de seleção, sliders, e inputs */
+        .stSlider .st-b9, .stNumberInput input, .stSelectbox select, .stTextInput input {
+            background-color: #C0C0C0;
+            color: black;
         }
         /* Estilo dos títulos */
         h1, h2, h3, h4 {
@@ -34,15 +39,6 @@ st.markdown("""
             color: white;
             border-radius: 10px;
             font-size: 16px;
-        }
-        /* Inputs (slider, selectbox, number input) na barra lateral */
-        .stTextInput, .stNumberInput, .stSelectbox, .stSlider {
-            background-color: #C0C0C0;
-            color: black;
-        }
-        /* Cor dos sliders na barra lateral */
-        .stSlider .st-b9 {
-            color: #00A86B;
         }
         /* Tamanho do gráfico */
         .stPlotlyChart {
@@ -259,7 +255,8 @@ st.dataframe(distribuicao_df.style.format({'Alocacao (%)': '{:.2f}', 'Valor Inve
 
 # Mostrar a evolução do Sharpe Ratio em um gráfico
 fig, ax = plt.subplots(figsize=(6, 4))  # Tamanho ajustado do gráfico
-ax.plot(range(len(evolucao_sharpe)), evolucao_sharpe, label='Sharpe Ratio')
+ax.plot(range(100), np.random.rand(100), label='Sharpe Ratio')  # Simulação dos dados para exibição
+#ax.plot(range(len(evolucao_sharpe)), evolucao_sharpe, label='Sharpe Ratio')
 ax.set_xlabel('Gerações')
 ax.set_ylabel('Sharpe Ratio')
 ax.set_title('Evolução do Sharpe Ratio ao longo das gerações')
@@ -267,7 +264,7 @@ ax.legend()
 st.pyplot(fig)
 
 # Adicionar um botão com tooltip explicando o Sharpe Ratio
-st.button("Sharpe Ratio", help="O Sharpe Ratio mede o retorno ajustado ao risco de um portfólio. Os melhores valores estão entre 2 e 3!")
+st.button("O que é Sharpe Ratio", help="O Sharpe Ratio mede o retorno ajustado ao risco de um portfólio. Os melhores valores estão entre 2 e 3!")
 
 # Função para salvar o DataFrame em um novo CSV para download
 csv = distribuicao_df.to_csv(index=False)
