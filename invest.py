@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import yfinance as yf
 import matplotlib.pyplot as plt
-import pygwalker as pyg  # Certificar-se de que está instalado e funcionando corretamente
+import pygwalker as pyg  # Certifique-se de que está instalado corretamente
 
 # Título da aplicação no centro da tela
 st.title("Otimização de Investimentos - Realize seus Objetivos")
@@ -101,49 +101,11 @@ def calcular_sharpe(portfolio, retornos, riscos, taxa_livre_risco):
         sharpe_ratio *= 0.2
     return sharpe_ratio
 
-# Lista para armazenar a evolução do Sharpe Ratio
-evolucao_sharpe = []
-
-genoma_inicial = np.array([
-    0.00,  # Tesouro Prefixado (sem alocação)
-    0.00,  # Tesouro RendA (sem alocação)
-    0.20,  # Tesouro Selic (20% do portfólio)
-    0.00,  # Tesouro IPCA (sem alocação)
-    0.05,  # Bitcoin (5% do portfólio)
-    0.00,  # Cardano (sem alocação)
-    0.03,  # Ethereum (5% do portfólio)
-    0.00,  # Litecoin (sem alocação)
-    0.00,  # Dólar (sem alocação)
-    0.03,  # VALE3.SA (5% do portfólio)
-    0.05,  # PETR4.SA (5% do portfólio)
-    0.00,  # JBSS3.SA (sem alocação)
-    0.00,  # MGLU3.SA (sem alocação)
-    0.00,  # RENT3.SA (sem alocação)
-    0.00,  # B3SA3.SA (sem alocação)
-    0.00,  # WEGE3.SA (sem alocação)
-    0.00,  # EMBR3.SA (sem alocação)
-    0.05,  # GOLL4.SA (5% do portfólio)
-    0.05,  # ITUB4.SA (5% do portfólio)
-    0.06,  # Renda Fixa BB 1 (10% do portfólio)
-    0.10,  # Renda Fixa BB 2 (10% do portfólio)
-    0.00,  # Renda Fixa BB 3 (sem alocação)
-    0.00,  # Renda Fixa BB 4 (sem alocação)
-    0.00,  # Renda Fixa BB 5 (sem alocação)
-    0.05,  # Renda Fixa Bradesco 1 (5% do portfólio)
-    0.05,  # Renda Fixa Bradesco 2 (5% do portfólio)
-    0.05,  # Renda Fixa Bradesco 3 (5% do portfólio)
-    0.05,  # Renda Fixa Bradesco 4 (5% do portfólio)
-    0.00,  # Renda Fixa Bradesco 5 (sem alocação)
-    0.05,  # Renda Fixa Itaú 1 (5% do portfólio)
-    0.05,  # Renda Fixa Itaú 2 (5% do portfólio)
-    0.03,  # Renda Fixa Itaú 3 (5% do portfólio)
-    0.05,  # Renda Fixa Itaú 4 (5% do portfólio)
-    0.00   # Renda Fixa Itaú 5 (sem alocação)
-])
-
-
-# Verificando se a soma das alocações é 100%
-assert np.isclose(genoma_inicial.sum(), 1.0), "As alocações devem somar 100% (ou 1.0 em fração)"
+# Função para ajustar as alocações
+def ajustar_alocacao(portfolio, limite_max=0.25):
+    portfolio = np.clip(portfolio, 0, limite_max)
+    portfolio /= portfolio.sum()
+    return portfolio
 
 # Função de cruzamento ajustada
 def cruzamento(pai1, pai2):
@@ -171,14 +133,78 @@ def mutacao(portfolio, taxa_mutacao, limite_max=0.25):
         portfolio = ajustar_alocacao(portfolio, limite_max)
     return portfolio
 
-# Rodar o algoritmo genético com o genoma inicial fixo
-melhor_portfolio = np.random.dirichlet(np.ones(34))  # Simulação inicial para não quebrar
+# Função para gerar a população inicial
+def gerar_portfolios_com_genoma_inicial(genoma_inicial, num_portfolios, num_ativos):
+    populacao = [genoma_inicial]
+    for _ in range(num_portfolios - 1):
+        populacao.append(np.random.dirichlet(np.ones(num_ativos)))
+    return populacao
 
-# Simulação de distribuição (placeholder antes de integrar o algoritmo real)
-ativos = df['Ativo'].values
+# Rodar o algoritmo genético
+def algoritmo_genetico_com_genoma_inicial(retornos, riscos, genoma_inicial, taxa_livre_risco=0.1075, num_portfolios=100, geracoes=100, usar_elitismo=True, taxa_mutacao=0.05):
+    populacao = gerar_portfolios_com_genoma_inicial(genoma_inicial, num_portfolios, len(retornos))
+    melhor_portfolio = genoma_inicial
+    melhor_sharpe = calcular_sharpe(genoma_inicial, retornos, riscos, taxa_livre_risco)
+    
+    evolucao_sharpe = []  # Armazenar a evolução do Sharpe Ratio em cada geração
+
+    for geracao in range(geracoes):
+        fitness_scores = np.array([calcular_sharpe(port, retornos, riscos, taxa_livre_risco) for port in populacao])
+        indice_melhor_portfolio = np.argmax(fitness_scores)
+        
+        # Armazenar o melhor Sharpe Ratio de cada geração
+        melhor_sharpe = fitness_scores[indice_melhor_portfolio]
+        melhor_portfolio = populacao[indice_melhor_portfolio]
+        evolucao_sharpe.append(melhor_sharpe)
+
+        populacao = selecao_torneio(populacao, fitness_scores)
+        nova_populacao = []
+        for i in range(0, len(populacao), 2):
+            pai1, pai2 = populacao[i], populacao[i+1]
+            filho1, filho2 = cruzamento(pai1, pai2)
+            filho1 = ajustar_alocacao(filho1)
+            filho2 = ajustar_alocacao(filho2)
+            nova_populacao.append(mutacao(filho1, taxa_mutacao))
+            nova_populacao.append(mutacao(filho2, taxa_mutacao))
+
+        # Inserir o elitismo
+        if usar_elitismo:
+            nova_populacao[0] = melhor_portfolio
+
+        populacao = nova_populacao
+
+    return melhor_portfolio, evolucao_sharpe
+
+# Rodar o algoritmo genético com o genoma inicial fixo
+melhor_portfolio, evolucao_sharpe = algoritmo_genetico_com_genoma_inicial(
+    retornos_usados,  # Usar o conjunto de retornos selecionado pelo usuário
+    riscos_completos_final,  # Usar a variável de riscos correta
+    genoma_inicial,  # Genoma inicial
+    taxa_livre_risco,  # Taxa livre de risco
+    num_portfolios=100,  # Número de portfólios
+    geracoes=100,  # Número de gerações
+    usar_elitismo=usar_elitismo,  # Definido pelo usuário
+    taxa_mutacao=taxa_mutacao  # Definido pelo usuário
+)
+
+# Mostrar a evolução do Sharpe Ratio em um gráfico após a tabela de portfólio
+st.write("Evolução do Sharpe Ratio ao longo das gerações:")
+
+# Mostrar a evolução do Sharpe Ratio em um gráfico
+fig, ax = plt.subplots()
+ax.plot(range(1, len(evolucao_sharpe) + 1), evolucao_sharpe, label='Sharpe Ratio', marker='o')
+ax.set_xlabel('Gerações')
+ax.set_ylabel('Sharpe Ratio')
+ax.set_title('Evolução do Sharpe Ratio ao longo das gerações')
+ax.legend()
+
+# Exibir o gráfico no Streamlit
+st.pyplot(fig)
+
+# Distribuir o valor total de investimento entre os ativos com base na melhor alocação
 distribuicao_investimento = melhor_portfolio * valor_total
 distribuicao_df = pd.DataFrame({
-    'Ativo': ativos,
+    'Ativo': df['Ativo'].values,
     'Alocacao (%)': melhor_portfolio * 100,
     'Valor Investido (R$)': distribuicao_investimento
 })
@@ -206,73 +232,6 @@ st.write(f"Retorno esperado em 12 meses: {retorno_12m:.2f}%")
 st.write(f"Retorno esperado em 24 meses: {retorno_24m:.2f}%")
 st.write(f"Retorno esperado em 36 meses: {retorno_36m:.2f}%")
 
-# Exemplo de integração do pygwalker para visualização interativa
-pyg.walk(distribuicao_df)
-
-# Certificar-se de que a lista evolucao_sharpe está sendo populada corretamente durante o processo de otimização
-evolucao_sharpe = []
-
-
-# Função para rodar o algoritmo genético com ajustes de penalidade e variabilidade
-def algoritmo_genetico_com_genoma_inicial(retornos, riscos, genoma_inicial, taxa_livre_risco=0.1075, num_portfolios=100, geracoes=100, usar_elitismo=True, taxa_mutacao=0.05):
-    populacao = gerar_portfolios_com_genoma_inicial(genoma_inicial, num_portfolios, len(retornos))
-    melhor_portfolio = genoma_inicial
-    melhor_sharpe = calcular_sharpe(genoma_inicial, retornos, riscos, taxa_livre_risco)
-
-    for geracao in range(geracoes):
-        fitness_scores = np.array([calcular_sharpe(port, retornos, riscos, taxa_livre_risco) for port in populacao])
-        indice_melhor_portfolio = np.argmax(fitness_scores)
-        
-        # Armazenar o melhor Sharpe Ratio de cada geração
-        melhor_sharpe = fitness_scores[indice_melhor_portfolio]
-        melhor_portfolio = populacao[indice_melhor_portfolio]
-        evolucao_sharpe.append(melhor_sharpe)
-
-        populacao = selecao_torneio(populacao, fitness_scores)
-        nova_populacao = []
-        for i in range(0, len(populacao), 2):
-            pai1, pai2 = populacao[i], populacao[i+1]
-            filho1, filho2 = cruzamento(pai1, pai2)
-            filho1 = ajustar_alocacao(filho1)
-            filho2 = ajustar_alocacao(filho2)
-            nova_populacao.append(mutacao(filho1, taxa_mutacao))
-            nova_populacao.append(mutacao(filho2, taxa_mutacao))
-
-        # Inserir o elitismo
-        if usar_elitismo:
-            nova_populacao[0] = melhor_portfolio
-
-        populacao = nova_populacao
-
-    return melhor_portfolio
-
-
-
-# Rodar o algoritmo genético com o genoma inicial fixo
-melhor_portfolio = algoritmo_genetico_com_genoma_inicial(
-    retornos_usados,  # Usar o conjunto de retornos selecionado pelo usuário
-    riscos_completos_final,  # Usar a variável de riscos correta
-    genoma_inicial,  # Genoma inicial
-    taxa_livre_risco,  # Taxa livre de risco
-    num_portfolios=100,  # Número de portfólios
-    geracoes=100,  # Número de gerações
-    usar_elitismo=usar_elitismo,  # Definido pelo usuário
-    taxa_mutacao=taxa_mutacao  # Definido pelo usuário
-)
-
-# Mostrar a evolução do Sharpe Ratio em um gráfico após a tabela de portfólio
-st.write("Evolução do Sharpe Ratio ao longo das gerações:")
-
-# Mostrar a evolução do Sharpe Ratio em um gráfico
-fig, ax = plt.subplots()
-ax.plot(range(1, len(evolucao_sharpe) + 1), evolucao_sharpe, label='Sharpe Ratio', marker='o')
-ax.set_xlabel('Gerações')
-ax.set_ylabel('Sharpe Ratio')
-ax.set_title('Evolução do Sharpe Ratio ao longo das gerações')
-ax.legend()
-
-# Exibir o gráfico no Streamlit
-st.pyplot(fig)
 
 
 
