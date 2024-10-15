@@ -1,152 +1,20 @@
-import streamlit as st
-import pandas as pd
-import numpy as np
-import yfinance as yf
-import matplotlib.pyplot as plt
-
-# CSS para ajustar as cores da página e da barra lateral
-st.markdown("""
-    <style>
-        /* Cor de fundo geral da página */
-        body {
-            background-color: #202A30; 
-        }
-        /* Ajuste para o container principal de Streamlit */
-        .stApp {
-            background-color: #202A30;
-        }
-        /* Cor de fundo da barra lateral */
-        [data-testid="stSidebar"] {
-            background-color: #202A30 !important;
-        }
-        /* Ajuste do background para caixas de seleção, sliders, e inputs na barra lateral */
-        [data-testid="stSidebar"] .stSlider, [data-testid="stSidebar"] .stNumberInput, [data-testid="stSidebar"] .stSelectbox, [data-testid="stSidebar"] .stTextInput {
-            background-color: #202A30 !important;
-            color: white !important;
-        }
-        /* Estilo dos textos na barra lateral */
-        [data-testid="stSidebar"] p, [data-testid="stSidebar"] label {
-            color: #C0C0C0 !important;
-        }
-        /* Estilo dos títulos */
-        h1, h2, h3, h4 {
-            color: #C0C0C0;
-        }
-        /* Botões personalizados */
-        .stButton>button {
-            background-color: #00A86B;
-            color: white;
-            border-radius: 10px;
-            font-size: 16px;
-        }
-        /* Tamanho do gráfico */
-        .stPlotlyChart {
-            height: 400px;
-        }
-    </style>
-""", unsafe_allow_html=True)
-
-# Adicionando o logo
-st.image("https://raw.githubusercontent.com/seu-usuario/seu-repositorio/path-da-imagem.png", width=200)
-
-# Título da aplicação e explicação de marketing
-st.title("Otimização de Investimentos - Realize seus Objetivos")
-st.write("""
-**Otimize seus investimentos com Inteligência Artificial!** 
-Nosso app usa algoritmos genéticos para buscar o melhor portfólio, maximizando retornos de acordo com suas metas e perfil de risco. Personalize suas estratégias e aproveite o poder da IA para se manter à frente no mercado financeiro.
-""")
-
-# Menu lateral com todas as entradas do usuário
-with st.sidebar:
-    st.header("Personalize seu Portfólio")
-    
-    # Valor do investimento
-    valor_total = st.slider("Valor do investimento", min_value=1000, max_value=5000000, value=100000, step=5000)
-    
-    # Taxa de mutação
-    taxa_mutacao = st.slider("Taxa de Mutação", min_value=0.01, max_value=0.2, value=0.05, step=0.01, 
-                             help="A taxa de mutação influencia a variedade nas soluções. Quanto maior a taxa, mais o algoritmo explora novas soluções.")
-
-    # Taxa livre de risco
-    taxa_livre_risco = st.number_input("Taxa Livre de Risco (ex: SELIC)", value=0.1075)
-
-    # Elitismo com help
-    usar_elitismo = st.checkbox("Deseja usar elitismo?", value=True, help="O elitismo mantém os melhores portfólios de cada geração, garantindo que as soluções não piorem ao longo do tempo.")
-    
-    # Retorno ajustado ou real com help
-    tipo_retorno = st.selectbox("Deseja usar retornos ajustados ou reais?", options=["Ajustados", "Reais"],
-                                help="Retorno ajustado considera ajustes como maiores retornos para ativos de maior risco, como criptomoedas. O retorno real considera apenas os dados de retorno históricos.")
-    
-    # Personalização das metas de retorno
-    st.write("Deseja buscar um portfólio para atingir uma taxa de retorno personalizada?")
-    personalizar_retorno = st.selectbox("Personalizar taxa de retorno?", options=["Não", "Sim"])
-
-    if personalizar_retorno == "Sim":
-        taxa_retorno_12m = st.number_input("Meta de retorno em 12 meses (%)", min_value=0.0, value=10.0)
-        taxa_retorno_24m = st.number_input("Meta de retorno em 24 meses (%)", min_value=0.0, value=12.0)
-        taxa_retorno_36m = st.number_input("Meta de retorno em 36 meses (%)", min_value=0.0, value=15.0)
-
-        # Definir as metas de retorno com base na entrada do usuário
-        metas_retorno = {
-            '12m': taxa_retorno_12m,
-            '24m': taxa_retorno_24m,
-            '36m': taxa_retorno_36m
-        }
-
-# Função para calcular o Sharpe Ratio com penalização e normalização
-def calcular_sharpe(portfolio, retornos, riscos, taxa_livre_risco):
-    retorno_portfolio = np.dot(portfolio, retornos)  # Retorno ponderado do portfólio
-    risco_portfolio = np.sqrt(np.dot(portfolio, riscos ** 2))  # Risco ponderado do portfólio
-
-    # Evitar divisões por zero ou risco muito baixo
-    if risco_portfolio < 0.01:
-        risco_portfolio = 0.01
-
-    # Calcular o Sharpe Ratio
-    sharpe_ratio = (retorno_portfolio - taxa_livre_risco) / risco_portfolio
-
-    # Penalizar apenas valores excessivamente altos (>5), mantendo flexibilidade
-    if sharpe_ratio > 5.0:
-        sharpe_ratio = sharpe_ratio * 0.5  # Penalização leve para valores muito altos
-
-    return sharpe_ratio
-
-# Função para rodar o algoritmo genético com parada dinâmica
-def algoritmo_genetico_com_parada_dinamica(retornos, riscos, genoma_inicial, taxa_livre_risco=0.1075, num_portfolios=100, max_geracoes=500, usar_elitismo=True, taxa_mutacao=0.05, max_sem_melhoria=20, target_sharpe=5.0):
+# Rodar o algoritmo genético
+def algoritmo_genetico_com_genoma_inicial(retornos, riscos, genoma_inicial, taxa_livre_risco=0.1075, num_portfolios=100, geracoes=100, usar_elitismo=True, taxa_mutacao=0.05):
     populacao = gerar_portfolios_com_genoma_inicial(genoma_inicial, num_portfolios, len(retornos))
     melhor_portfolio = genoma_inicial
     melhor_sharpe = calcular_sharpe(genoma_inicial, retornos, riscos, taxa_livre_risco)
-    geracoes_sem_melhoria = 0
-    evolucao_sharpe = []
+    
+    evolucao_sharpe = []  # Armazenar a evolução do Sharpe Ratio em cada geração
 
-    for geracao in range(max_geracoes):
-        # Calcula o Sharpe Ratio para cada portfólio na população
+    for geracao in range(geracoes):
         fitness_scores = np.array([calcular_sharpe(port, retornos, riscos, taxa_livre_risco) for port in populacao])
-
-        # Encontra o melhor portfólio da geração atual
         indice_melhor_portfolio = np.argmax(fitness_scores)
-        melhor_sharpe_da_geracao = fitness_scores[indice_melhor_portfolio]
-
-        # Atualiza o melhor Sharpe Ratio se houver melhoria
-        if melhor_sharpe_da_geracao > melhor_sharpe:
-            melhor_sharpe = melhor_sharpe_da_geracao
-            melhor_portfolio = populacao[indice_melhor_portfolio]
-            geracoes_sem_melhoria = 0  # Reinicia o contador de gerações sem melhoria
-        else:
-            geracoes_sem_melhoria += 1  # Aumenta o contador se não houver melhoria
         
-        # Adiciona o Sharpe Ratio da geração atual à lista de evolução
+        # Armazenar o melhor Sharpe Ratio de cada geração
+        melhor_sharpe = fitness_scores[indice_melhor_portfolio]
+        melhor_portfolio = populacao[indice_melhor_portfolio]
         evolucao_sharpe.append(melhor_sharpe)
 
-        # Critério de parada dinâmica
-        if melhor_sharpe >= target_sharpe:
-            st.write(f"Parou porque o Sharpe Ratio atingiu {melhor_sharpe:.2f} na geração {geracao+1}.")
-            break
-        elif geracoes_sem_melhoria >= max_sem_melhoria:
-            st.write(f"Parou porque não houve melhoria por {max_sem_melhoria} gerações consecutivas.")
-            break
-
-        # Evolução da população com elitismo
         populacao = selecao_torneio(populacao, fitness_scores)
         nova_populacao = []
         for i in range(0, len(populacao), 2):
@@ -157,70 +25,70 @@ def algoritmo_genetico_com_parada_dinamica(retornos, riscos, genoma_inicial, tax
             nova_populacao.append(mutacao(filho1, taxa_mutacao))
             nova_populacao.append(mutacao(filho2, taxa_mutacao))
 
+        # Inserir o elitismo
         if usar_elitismo:
             nova_populacao[0] = melhor_portfolio
 
         populacao = nova_populacao
 
-    return melhor_portfolio, melhor_sharpe, evolucao_sharpe
+    return melhor_portfolio, evolucao_sharpe
 
-# Funções auxiliares: cruzamento, mutação, seleção por torneio e ajuste de alocação
-def selecao_torneio(populacao, fitness_scores, tamanho_torneio=3):
-    selecionados = []
-    for _ in range(len(populacao)):
-        competidores = np.random.choice(len(populacao), tamanho_torneio, replace=False)
-        vencedor = competidores[np.argmax(fitness_scores[competidores])]
-        selecionados.append(populacao[vencedor])
-    return selecionados
-
-def gerar_portfolios_com_genoma_inicial(genoma_inicial, num_portfolios, num_ativos):
-    populacao = [genoma_inicial]  # Começar com o genoma inicial fixo
-    for _ in range(num_portfolios - 1):  # Gerar o restante aleatoriamente
-        populacao.append(np.random.dirichlet(np.ones(num_ativos)))
-    return populacao
-
-def ajustar_alocacao(portfolio, limite_max=0.25):
-    portfolio = np.clip(portfolio, 0, limite_max)  # Limitar entre 0 e 25%
-    portfolio /= portfolio.sum()  # Normalizar para garantir que a soma seja 1
-    return portfolio
-
-def cruzamento(pai1, pai2):
-    num_pontos_corte = np.random.randint(1, 4)  # Gerar de 1 a 3 pontos de corte
-    pontos_corte = sorted(np.random.choice(range(1, len(pai1)), num_pontos_corte, replace=False))
-    filho1, filho2 = pai1.copy(), pai2.copy()
-    for i in range(0, len(pontos_corte) - 1, 2):
-        filho1[pontos_corte[i]:pontos_corte[i+1]] = pai2[pontos_corte[i]:pontos_corte[i+1]]
-        filho2[pontos_corte[i]:pontos_corte[i+1]] = pai1[pontos_corte[i]:pontos_corte[i+1]]
-    filho1 = ajustar_alocacao(filho1)
-    filho2 = ajustar_alocacao(filho2)
-    return filho1, filho2
-
-def mutacao(portfolio, taxa_mutacao):
-    if np.random.random() < taxa_mutacao:
-        i = np.random.randint(0, len(portfolio))
-        portfolio[i] += np.random.uniform(-0.1, 0.1)
-        portfolio = ajustar_alocacao(portfolio)
-    return portfolio
-
-# Executar o algoritmo com a nova lógica de parada dinâmica
-retornos_usados = np.random.rand(34) * 0.4  # Simulação de dados
-riscos_completos_final = np.random.rand(34) * 0.2  # Simulação de riscos
-genoma_inicial = np.array([0.05] * 34)  # Genoma inicial com alocações iguais
-
-melhor_portfolio, melhor_sharpe, evolucao_sharpe = algoritmo_genetico_com_parada_dinamica(
-    retornos_usados, riscos_completos_final, genoma_inicial, taxa_livre_risco=0.1075,
-    num_portfolios=100, max_geracoes=500, usar_elitismo=True, taxa_mutacao=0.05,
-    max_sem_melhoria=20, target_sharpe=3.0
+# Rodar o algoritmo genético com o genoma inicial fixo
+melhor_portfolio, evolucao_sharpe = algoritmo_genetico_com_genoma_inicial(
+    retornos_usados,  # Usar o conjunto de retornos selecionado pelo usuário
+    riscos_completos_final,  # Usar a variável de riscos correta
+    genoma_inicial,  # Genoma inicial
+    taxa_livre_risco,  # Taxa livre de risco
+    num_portfolios=100,  # Número de portfólios
+    geracoes=100,  # Número de gerações
+    usar_elitismo=usar_elitismo,  # Definido pelo usuário
+    taxa_mutacao=taxa_mutacao  # Definido pelo usuário
 )
 
-# Exibir gráfico da evolução do Sharpe Ratio
-fig, ax = plt.subplots(figsize=(6, 4))
-ax.plot(range(len(evolucao_sharpe)), evolucao_sharpe, label='Sharpe Ratio')
+# Mostrar a evolução do Sharpe Ratio em um gráfico após a tabela de portfólio
+st.write("Evolução do Sharpe Ratio ao longo das gerações:")
+
+# Mostrar a evolução do Sharpe Ratio em um gráfico
+fig, ax = plt.subplots()
+ax.plot(range(1, len(evolucao_sharpe) + 1), evolucao_sharpe, label='Sharpe Ratio', marker='o')
 ax.set_xlabel('Gerações')
 ax.set_ylabel('Sharpe Ratio')
 ax.set_title('Evolução do Sharpe Ratio ao longo das gerações')
 ax.legend()
+
+# Exibir o gráfico no Streamlit
 st.pyplot(fig)
+
+# Distribuir o valor total de investimento entre os ativos com base na melhor alocação
+distribuicao_investimento = melhor_portfolio * valor_total
+distribuicao_df = pd.DataFrame({
+    'Ativo': df['Ativo'].values,
+    'Alocacao (%)': melhor_portfolio * 100,
+    'Valor Investido (R$)': distribuicao_investimento
+})
+
+# Ordenar o DataFrame pela coluna 'Alocacao (%)' em ordem decrescente
+distribuicao_df = distribuicao_df.sort_values(by='Alocacao (%)', ascending=False)
+
+# Exibir a distribuição ideal do investimento no Streamlit
+st.write("Distribuição ideal de investimento (ordenada por alocação):")
+st.dataframe(distribuicao_df.style.format({'Alocacao (%)': '{:.2f}', 'Valor Investido (R$)': '{:.2f}'}))
+
+# Função para salvar o DataFrame em um novo CSV para download
+csv = distribuicao_df.to_csv(index=False)
+
+# Botão para download do CSV atualizado
+st.download_button(label="Baixar CSV Atualizado", data=csv, file_name='Pool_Investimentos_Atualizacao2.csv', mime='text/csv')
+
+# Calcular os retornos esperados com base nas alocações
+retorno_12m = np.dot(melhor_portfolio, retornos_12m)
+retorno_24m = np.dot(melhor_portfolio, retornos_24m)
+retorno_36m = np.dot(melhor_portfolio, retornos_36m)
+
+# Exibir os retornos esperados no Streamlit
+st.write(f"Retorno esperado em 12 meses: {retorno_12m:.2f}%")
+st.write(f"Retorno esperado em 24 meses: {retorno_24m:.2f}%")
+st.write(f"Retorno esperado em 36 meses: {retorno_36m:.2f}%")
 
 
 
