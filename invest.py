@@ -10,7 +10,7 @@ st.markdown("""
     <style>
         /* Cor de fundo geral da página */
         body {
-            background-color: #002244;
+            background-color: #3A424B;
         }
         /* Ajuste para o container principal de Streamlit */
         .stApp {
