@@ -36,7 +36,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Adicionando o logo
-st.image("/mnt/data/A_modern_and_sleek_logo_for_'Invest_GenAi',_combin.png", width=200)
+st.image("https://github.com/beatrizcardc/Investimentos/blob/main/DALL%C2%B7E%202024-10-15%2016.21.51%20-%20A%20modern%20and%20sleek%20logo%20for%20'Invest%20GenAi'%2C%20combining%20elements%20of%20artificial%20intelligence%20and%20finance.%20The%20logo%20should%20feature%20the%20name%20'Invest%20GenAi'.webp", width=200)
 
 # Título da aplicação e explicação de marketing
 st.title("Otimização de Investimentos - Realize seus Objetivos")
