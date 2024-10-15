@@ -5,9 +5,45 @@ import yfinance as yf
 import matplotlib.pyplot as plt
 import pygwalker as pyg
 
-# Título da aplicação e explicação
+# Aplicando as cores ao estilo
+st.markdown("""
+    <style>
+        /* Cor de fundo geral */
+        .main {
+            background-color: #002244;
+        }
+        /* Estilo dos títulos */
+        h1, h2, h3, h4 {
+            color: #C0C0C0;
+        }
+        /* Estilo dos textos */
+        p {
+            color: #C0C0C0;
+        }
+        /* Botões personalizados */
+        .stButton>button {
+            background-color: #00A86B;
+            color: white;
+            border-radius: 10px;
+            font-size: 16px;
+        }
+        /* Caixa de seleção e outros inputs */
+        .stTextInput, .stNumberInput, .stSelectbox, .stSlider {
+            background-color: #C0C0C0;
+            color: black;
+        }
+    </style>
+""", unsafe_allow_html=True)
+
+# Adicionando o logo
+st.image("/mnt/data/A_modern_and_sleek_logo_for_'Invest_GenAi',_combin.png", width=200)
+
+# Título da aplicação e explicação de marketing
 st.title("Otimização de Investimentos - Realize seus Objetivos")
-st.write("Esta aplicação utiliza algoritmos genéticos para otimizar portfólios de investimentos, buscando maximizar o Sharpe Ratio com base em uma série de parâmetros que você pode personalizar.")
+st.write("""
+**Otimize seus investimentos com Inteligência Artificial!** 
+Nossa aplicação usa algoritmos genéticos para ajustar automaticamente seu portfólio, maximizando retornos de acordo com suas metas e perfil de risco. Personalize suas estratégias e aproveite o poder da IA para se manter à frente no mercado financeiro.
+""")
 
 # Menu lateral com todas as entradas do usuário
 with st.sidebar:
@@ -18,16 +54,17 @@ with st.sidebar:
     
     # Taxa de mutação
     taxa_mutacao = st.slider("Taxa de Mutação", min_value=0.01, max_value=0.2, value=0.05, step=0.01, 
-                             help="A taxa de mutação influencia a variedade nas soluções.")
-    
+                             help="A taxa de mutação influencia a variedade nas soluções. Quanto maior a taxa, mais o algoritmo explora novas soluções.")
+
     # Taxa livre de risco
     taxa_livre_risco = st.number_input("Taxa Livre de Risco (ex: SELIC)", value=0.1075)
+
+    # Elitismo com help
+    usar_elitismo = st.checkbox("Deseja usar elitismo?", value=True, help="O elitismo mantém os melhores portfólios de cada geração, garantindo que as soluções não piorem ao longo do tempo.")
     
-    # Elitismo
-    usar_elitismo = st.checkbox("Deseja usar elitismo?", value=True)
-    
-    # Retorno ajustado ou real
-    tipo_retorno = st.selectbox("Deseja usar retornos ajustados ou reais?", options=["Ajustados", "Reais"])
+    # Retorno ajustado ou real com help
+    tipo_retorno = st.selectbox("Deseja usar retornos ajustados ou reais?", options=["Ajustados", "Reais"],
+                                help="Retorno ajustado considera ajustes como maiores retornos para ativos de maior risco, como criptomoedas. O retorno real considera apenas os dados de retorno históricos.")
     
     # Personalização das metas de retorno
     st.write("Deseja buscar um portfólio para atingir uma taxa de retorno personalizada?")
