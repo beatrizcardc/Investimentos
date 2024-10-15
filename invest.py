@@ -14,7 +14,7 @@ st.markdown("""
         }
         /* Ajuste para o container principal de Streamlit */
         .stApp {
-            background-color: #002244;
+            background-color: #3A424B;
         }
         /* Cor de fundo da barra lateral */
         .css-1d391kg {
@@ -42,7 +42,7 @@ st.markdown("""
         }
         /* Tamanho do gráfico */
         .stPlotlyChart {
-            height: 400px;
+            height: 200px;
         }
     </style>
 """, unsafe_allow_html=True)
