@@ -3,9 +3,8 @@ import pandas as pd
 import numpy as np
 import yfinance as yf
 import matplotlib.pyplot as plt
-import pygwalker as pyg
 
-# Aplicando as cores ao estilo
+# CSS para ajustar as cores da página e da barra lateral
 st.markdown("""
     <style>
         /* Cor de fundo geral da página */
@@ -27,11 +26,11 @@ st.markdown("""
         }
         /* Estilo dos textos na barra lateral */
         [data-testid="stSidebar"] p, [data-testid="stSidebar"] label {
-            color: #202A30 !important;
+            color: #C0C0C0 !important;
         }
         /* Estilo dos títulos */
         h1, h2, h3, h4 {
-            color: #202A30;
+            color: #C0C0C0;
         }
         /* Botões personalizados */
         .stButton>button {
@@ -54,7 +53,7 @@ st.image("https://raw.githubusercontent.com/seu-usuario/seu-repositorio/path-da-
 st.title("Otimização de Investimentos - Realize seus Objetivos")
 st.write("""
 **Otimize seus investimentos com Inteligência Artificial!** 
-Nossa aplicação usa algoritmos genéticos para ajustar automaticamente seu portfólio, maximizando retornos de acordo com suas metas e perfil de risco. Personalize suas estratégias e aproveite o poder da IA para se manter à frente no mercado financeiro.
+Nosso app usa algoritmos genéticos para buscar o melhor portfólio, maximizando retornos de acordo com suas metas e perfil de risco. Personalize suas estratégias e aproveite o poder da IA para se manter à frente no mercado financeiro.
 """)
 
 # Menu lateral com todas as entradas do usuário
@@ -106,34 +105,28 @@ def calcular_sharpe(portfolio, retornos, riscos, taxa_livre_risco):
     # Calcular o Sharpe Ratio
     sharpe_ratio = (retorno_portfolio - taxa_livre_risco) / risco_portfolio
 
-    # Condições de penalidade
-    #if sharpe_ratio < 1.0:
-        #sharpe_ratio = sharpe_ratio * 0.8  # Penaliza Sharpe Ratios baixos
-    #elif sharpe_ratio > 3.5:
-        #sharpe_ratio = sharpe_ratio * 0.5  # Reduz Sharpe Ratios excessivamente altos
-
     # Penalizar apenas valores excessivamente altos (>5), mantendo flexibilidade
     if sharpe_ratio > 5.0:
-        sharpe_ratio = sharpe_ratio * 0.5  # Reduzir valores excessivamente altos (penalização leve)
+        sharpe_ratio = sharpe_ratio * 0.5  # Penalização leve para valores muito altos
 
     return sharpe_ratio
 
 # Função para rodar o algoritmo genético com parada dinâmica
-def algoritmo_genetico_com_parada_dinamica(retornos, riscos, genoma_inicial, taxa_livre_risco=0.1075, num_portfolios=100, geracoes=100, usar_elitismo=True, taxa_mutacao=0.05, max_sem_melhoria=20, target_sharpe=3.0):
+def algoritmo_genetico_com_parada_dinamica(retornos, riscos, genoma_inicial, taxa_livre_risco=0.1075, num_portfolios=100, max_geracoes=500, usar_elitismo=True, taxa_mutacao=0.05, max_sem_melhoria=20, target_sharpe=5.0):
     populacao = gerar_portfolios_com_genoma_inicial(genoma_inicial, num_portfolios, len(retornos))
     melhor_portfolio = genoma_inicial
     melhor_sharpe = calcular_sharpe(genoma_inicial, retornos, riscos, taxa_livre_risco)
     geracoes_sem_melhoria = 0
     evolucao_sharpe = []
 
-    for geracao in range(geracoes):
+    for geracao in range(max_geracoes):
         # Calcula o Sharpe Ratio para cada portfólio na população
         fitness_scores = np.array([calcular_sharpe(port, retornos, riscos, taxa_livre_risco) for port in populacao])
-        
+
         # Encontra o melhor portfólio da geração atual
         indice_melhor_portfolio = np.argmax(fitness_scores)
         melhor_sharpe_da_geracao = fitness_scores[indice_melhor_portfolio]
-        
+
         # Atualiza o melhor Sharpe Ratio se houver melhoria
         if melhor_sharpe_da_geracao > melhor_sharpe:
             melhor_sharpe = melhor_sharpe_da_geracao
@@ -216,7 +209,7 @@ genoma_inicial = np.array([0.05] * 34)  # Genoma inicial com alocações iguais
 
 melhor_portfolio, melhor_sharpe, evolucao_sharpe = algoritmo_genetico_com_parada_dinamica(
     retornos_usados, riscos_completos_final, genoma_inicial, taxa_livre_risco=0.1075,
-    num_portfolios=100, geracoes=100, usar_elitismo=True, taxa_mutacao=0.05,
+    num_portfolios=100, max_geracoes=500, usar_elitismo=True, taxa_mutacao=0.05,
     max_sem_melhoria=20, target_sharpe=3.0
 )
 
