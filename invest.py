@@ -18,7 +18,7 @@ st.markdown("""
         }
         /* Cor de fundo da barra lateral */
         .css-1d391kg {
-            background-color: #3A424B;
+            background-color: #202A30;
         }
         /* Ajuste do background para caixas de seleção, sliders, e inputs */
         .stSlider .st-b9, .stNumberInput input, .stSelectbox select, .stTextInput input {
