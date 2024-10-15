@@ -244,3 +244,4 @@ st.write(f"Retorno esperado em 36 meses: {retorno_36m:.2f}%")
 
 
 
+
