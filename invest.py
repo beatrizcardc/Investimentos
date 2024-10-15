@@ -22,7 +22,7 @@ st.markdown("""
         }
         /* Ajuste do background para caixas de seleção, sliders, e inputs */
         .stSlider .st-b9, .stNumberInput input, .stSelectbox select, .stTextInput input {
-            background-color: #C0C0C0;
+            background-color: #3A424B;
             color: black;
         }
         /* Estilo dos títulos */
