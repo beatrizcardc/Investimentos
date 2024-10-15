@@ -104,6 +104,47 @@ def calcular_sharpe(portfolio, retornos, riscos, taxa_livre_risco):
 # Lista para armazenar a evolução do Sharpe Ratio
 evolucao_sharpe = []
 
+genoma_inicial = np.array([
+    0.00,  # Tesouro Prefixado (sem alocação)
+    0.00,  # Tesouro RendA (sem alocação)
+    0.20,  # Tesouro Selic (20% do portfólio)
+    0.00,  # Tesouro IPCA (sem alocação)
+    0.05,  # Bitcoin (5% do portfólio)
+    0.00,  # Cardano (sem alocação)
+    0.03,  # Ethereum (5% do portfólio)
+    0.00,  # Litecoin (sem alocação)
+    0.00,  # Dólar (sem alocação)
+    0.03,  # VALE3.SA (5% do portfólio)
+    0.05,  # PETR4.SA (5% do portfólio)
+    0.00,  # JBSS3.SA (sem alocação)
+    0.00,  # MGLU3.SA (sem alocação)
+    0.00,  # RENT3.SA (sem alocação)
+    0.00,  # B3SA3.SA (sem alocação)
+    0.00,  # WEGE3.SA (sem alocação)
+    0.00,  # EMBR3.SA (sem alocação)
+    0.05,  # GOLL4.SA (5% do portfólio)
+    0.05,  # ITUB4.SA (5% do portfólio)
+    0.06,  # Renda Fixa BB 1 (10% do portfólio)
+    0.10,  # Renda Fixa BB 2 (10% do portfólio)
+    0.00,  # Renda Fixa BB 3 (sem alocação)
+    0.00,  # Renda Fixa BB 4 (sem alocação)
+    0.00,  # Renda Fixa BB 5 (sem alocação)
+    0.05,  # Renda Fixa Bradesco 1 (5% do portfólio)
+    0.05,  # Renda Fixa Bradesco 2 (5% do portfólio)
+    0.05,  # Renda Fixa Bradesco 3 (5% do portfólio)
+    0.05,  # Renda Fixa Bradesco 4 (5% do portfólio)
+    0.00,  # Renda Fixa Bradesco 5 (sem alocação)
+    0.05,  # Renda Fixa Itaú 1 (5% do portfólio)
+    0.05,  # Renda Fixa Itaú 2 (5% do portfólio)
+    0.03,  # Renda Fixa Itaú 3 (5% do portfólio)
+    0.05,  # Renda Fixa Itaú 4 (5% do portfólio)
+    0.00   # Renda Fixa Itaú 5 (sem alocação)
+])
+
+
+# Verificando se a soma das alocações é 100%
+assert np.isclose(genoma_inicial.sum(), 1.0), "As alocações devem somar 100% (ou 1.0 em fração)"
+
 # Função de cruzamento ajustada
 def cruzamento(pai1, pai2):
     num_pontos_corte = np.random.randint(1, 4)
@@ -171,14 +212,6 @@ pyg.walk(distribuicao_df)
 # Certificar-se de que a lista evolucao_sharpe está sendo populada corretamente durante o processo de otimização
 evolucao_sharpe = []
 
-
-# Função para gerar o genoma inicial de portfólios com 34 ativos
-genoma_inicial = np.array([
-    0.00, 0.00, 0.20, 0.00, 0.05, 0.00, 0.03, 0.00, 0.00, 0.03,
-    0.05, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.05, 0.05, 0.06,
-    0.10, 0.00, 0.00, 0.00, 0.05, 0.05, 0.05, 0.05, 0.00, 0.05,
-    0.05, 0.03, 0.05, 0.00
-])
 
 # Função para rodar o algoritmo genético com ajustes de penalidade e variabilidade
 def algoritmo_genetico_com_genoma_inicial(retornos, riscos, genoma_inicial, taxa_livre_risco=0.1075, num_portfolios=100, geracoes=100, usar_elitismo=True, taxa_mutacao=0.05):
