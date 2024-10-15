@@ -124,7 +124,7 @@ def algoritmo_genetico_com_parada(retornos, riscos, genoma_inicial, taxa_livre_r
     geracoes_sem_melhoria = 0
     evolucao_sharpe = []
 
-        for geracao in range(geracoes):
+    for geracao in range(geracoes):
         fitness_scores = np.array([calcular_sharpe(port, retornos, riscos, taxa_livre_risco) for port in populacao])
         indice_melhor_portfolio = np.argmax(fitness_scores)
         if fitness_scores[indice_melhor_portfolio] > melhor_sharpe:
