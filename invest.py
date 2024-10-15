@@ -60,6 +60,9 @@ tickers_acoes_cripto_dolar = ['VALE3.SA', 'PETR4.SA', 'JBSS3.SA', 'MGLU3.SA', 'R
 dados_historicos_completos = yf.download(tickers_acoes_cripto_dolar, start='2021-01-01', end='2024-01-01')['Adj Close']
 dados_historicos_completos.fillna(dados_historicos_completos.mean(), inplace=True)
 
+# Preencher valores NaN nos dados históricos com a média da coluna correspondente
+dados_historicos_completos.fillna(dados_historicos_completos.mean(), inplace=True)
+
 # Calcular os retornos diários e o desvio padrão (volatilidade) anualizado para as 15 ações, criptos e dólar
 retornos_diarios_completos = dados_historicos_completos.pct_change().dropna()
 riscos_acoes_cripto_dolar = retornos_diarios_completos.std() * np.sqrt(252)  # Riscos anualizados (15 ativos)
