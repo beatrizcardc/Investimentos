@@ -27,11 +27,11 @@ st.markdown("""
         }
         /* Estilo dos textos na barra lateral */
         [data-testid="stSidebar"] p, [data-testid="stSidebar"] label {
-            color: #C0C0C0 !important;
+            color: #202A30 !important;
         }
         /* Estilo dos títulos */
         h1, h2, h3, h4 {
-            color: #C0C0C0;
+            color: #202A30;
         }
         /* Botões personalizados */
         .stButton>button {
@@ -42,7 +42,7 @@ st.markdown("""
         }
         /* Tamanho do gráfico */
         .stPlotlyChart {
-            height: 200px;
+            height: 400px;
         }
     </style>
 """, unsafe_allow_html=True)
@@ -109,8 +109,8 @@ def calcular_sharpe(portfolio, retornos, riscos, taxa_livre_risco):
     # Condições de penalidade
     if sharpe_ratio < 1.0:
         sharpe_ratio = sharpe_ratio * 0.8  # Penaliza Sharpe Ratios baixos
-    elif sharpe_ratio > 3.0:
-        sharpe_ratio = sharpe_ratio * 0.2  # Reduz Sharpe Ratios excessivamente altos
+    elif sharpe_ratio > 3.5:
+        sharpe_ratio = sharpe_ratio * 0.5  # Reduz Sharpe Ratios excessivamente altos
 
     return sharpe_ratio
 
