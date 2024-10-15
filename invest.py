@@ -165,5 +165,19 @@ st.write(f"Retorno esperado em 36 meses: {retorno_36m:.2f}%")
 # Exemplo de integração do pygwalker para visualização interativa
 pyg.walk(distribuicao_df)
 
+# Adicionar o gráfico de evolução do Sharpe Ratio abaixo do quadro do portfólio
+st.write("Evolução do Sharpe Ratio ao longo das gerações:")
+
+# Mostrar a evolução do Sharpe Ratio em um gráfico
+fig, ax = plt.subplots()
+ax.plot(range(len(evolucao_sharpe)), evolucao_sharpe, label='Sharpe Ratio', marker='o')
+ax.set_xlabel('Gerações')
+ax.set_ylabel('Sharpe Ratio')
+ax.set_title('Evolução do Sharpe Ratio ao longo das gerações')
+ax.legend()
+
+# Exibir o gráfico no Streamlit
+st.pyplot(fig)
+
 
 
