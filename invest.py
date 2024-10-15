@@ -8,19 +8,16 @@ import pygwalker as pyg
 st.markdown("""
     <style>
         /* Cor de fundo da barra lateral */
-        .css-1d391kg {  /* Classe da barra lateral */
-            background-color: #202A30 !important;
-        }
-        .css-qrbaxs {  /* Ajuste adicional para a barra lateral */
+        [data-testid="stSidebar"] {
             background-color: #202A30 !important;
         }
         /* Ajuste do background para caixas de seleção, sliders, e inputs na barra lateral */
-        .css-1r2n5yc, .css-1f8sh0n, .css-ffhzg2 {
+        [data-testid="stSidebar"] .stSlider, [data-testid="stSidebar"] .stNumberInput, [data-testid="stSidebar"] .stSelectbox, [data-testid="stSidebar"] .stTextInput {
             background-color: #202A30 !important;
             color: white !important;
         }
         /* Estilo dos textos na barra lateral */
-        .css-1v0mbdj p, .css-1v0mbdj label {
+        [data-testid="stSidebar"] p, [data-testid="stSidebar"] label {
             color: #C0C0C0 !important;
         }
         /* Estilo dos títulos */
@@ -36,6 +33,7 @@ st.markdown("""
         }
     </style>
 """, unsafe_allow_html=True)
+
 
 
 # Adicionando o logo
