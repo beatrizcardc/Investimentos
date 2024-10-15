@@ -16,20 +16,20 @@ st.markdown("""
             background-color: #202A30;
         }
         /* Cor de fundo da barra lateral */
-        .css-1d391kg, .css-1n543e5, .css-1y4p8pa, .css-1v3fvcr {
+        .css-1d391kg, .css-1gfbziz, .css-12oz5g7 {
             background-color: #202A30;
         }
         /* Ajuste do background para caixas de seleção, sliders, e inputs */
-        .stSlider .st-b9, .stNumberInput input, .stSelectbox select, .stTextInput input {
+        .stSlider, .stNumberInput, .stSelectbox, .stTextInput {
             background-color: #202A30;
             color: white;
         }
-        /* Estilo dos títulos */
+        /* Estilo dos títulos e subtítulos */
         h1, h2, h3, h4 {
             color: #C0C0C0;
         }
         /* Estilo dos textos */
-        p {
+        p, label {
             color: #C0C0C0;
         }
         /* Botões personalizados */
@@ -41,10 +41,11 @@ st.markdown("""
         }
         /* Tamanho do gráfico */
         .stPlotlyChart {
-            height: 200px;
+            height: 400px;
         }
     </style>
 """, unsafe_allow_html=True)
+
 
 
 # Adicionando o logo
