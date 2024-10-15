@@ -254,7 +254,7 @@ st.write("Distribuição ideal de investimento (ordenada por alocação):")
 st.dataframe(distribuicao_df.style.format({'Alocacao (%)': '{:.2f}', 'Valor Investido (R$)': '{:.2f}'}))
 
 # Mostrar a evolução do Sharpe Ratio em um gráfico
-fig, ax = plt.subplots(figsize=(6, 4))  # Tamanho ajustado do gráfico
+fig, ax = plt.subplots(figsize=(4, 2))  # Tamanho ajustado do gráfico
 ax.plot(range(100), np.random.rand(100), label='Sharpe Ratio')  # Simulação dos dados para exibição
 #ax.plot(range(len(evolucao_sharpe)), evolucao_sharpe, label='Sharpe Ratio')
 ax.set_xlabel('Gerações')
