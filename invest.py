@@ -16,12 +16,12 @@ st.markdown("""
             background-color: #202A30;
         }
         /* Cor de fundo da barra lateral */
-        .css-1d391kg, .css-1gfbziz, .css-12oz5g7 {
-            background-color: #202A30;
+        .css-1d391kg, .css-1n543e5 {
+            background-color: #202A30 !important;
         }
         /* Ajuste do background para caixas de seleção, sliders, e inputs */
         .stSlider, .stNumberInput, .stSelectbox, .stTextInput {
-            background-color: #202A30;
+            background-color: #202A30 !important;
             color: white;
         }
         /* Estilo dos títulos e subtítulos */
@@ -41,10 +41,11 @@ st.markdown("""
         }
         /* Tamanho do gráfico */
         .stPlotlyChart {
-            height: 400px;
+            height: 200px;
         }
     </style>
 """, unsafe_allow_html=True)
+
 
 
 
