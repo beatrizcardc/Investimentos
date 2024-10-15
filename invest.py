@@ -5,13 +5,6 @@ import yfinance as yf
 import matplotlib.pyplot as plt
 import pygwalker as pyg
 
-import streamlit as st
-import pandas as pd
-import numpy as np
-import yfinance as yf
-import matplotlib.pyplot as plt
-import pygwalker as pyg
-
 # Aplicando as cores ao estilo
 st.markdown("""
     <style>
@@ -22,6 +15,10 @@ st.markdown("""
         /* Ajuste para o container principal de Streamlit */
         .stApp {
             background-color: #002244;
+        }
+        /* Cor de fundo do menu lateral (sidebar) */
+        .css-1d391kg {
+            background-color: #C0C0C0;
         }
         /* Estilo dos títulos */
         h1, h2, h3, h4 {
@@ -38,14 +35,18 @@ st.markdown("""
             border-radius: 10px;
             font-size: 16px;
         }
-        /* Inputs personalizados (slider, selectbox, etc.) */
+        /* Inputs (slider, selectbox, number input) na barra lateral */
         .stTextInput, .stNumberInput, .stSelectbox, .stSlider {
             background-color: #C0C0C0;
             color: black;
         }
-        /* Ajuste da cor de fundo dos widgets */
-        .stSidebar {
-            background-color: #002244;
+        /* Cor dos sliders na barra lateral */
+        .stSlider .st-b9 {
+            color: #00A86B;
+        }
+        /* Tamanho do gráfico */
+        .stPlotlyChart {
+            height: 400px;
         }
     </style>
 """, unsafe_allow_html=True)
@@ -57,7 +58,7 @@ st.image("https://raw.githubusercontent.com/beatrizcardc/Investimentos/main/DALL
 st.title("Otimização de Investimentos - Realize seus Objetivos")
 st.write("""
 **Otimize seus investimentos com Inteligência Artificial!** 
-Nossa aplicação usa algoritmos genéticos para ajustar automaticamente seu portfólio, maximizando retornos de acordo com suas metas e perfil de risco. Personalize suas estratégias e aproveite o poder da IA para se manter à frente no mercado financeiro.
+Nossa aplicação usa algoritmos genéticos para te dar o melhor portfólio, maximizando retornos de acordo com suas metas e perfil de risco. Personalize suas estratégias e aproveite o poder da IA para se manter à frente no mercado financeiro.
 """)
 
 
@@ -257,7 +258,7 @@ st.write("Distribuição ideal de investimento (ordenada por alocação):")
 st.dataframe(distribuicao_df.style.format({'Alocacao (%)': '{:.2f}', 'Valor Investido (R$)': '{:.2f}'}))
 
 # Mostrar a evolução do Sharpe Ratio em um gráfico
-fig, ax = plt.subplots()
+fig, ax = plt.subplots(figsize=(6, 4))  # Tamanho ajustado do gráfico
 ax.plot(range(len(evolucao_sharpe)), evolucao_sharpe, label='Sharpe Ratio')
 ax.set_xlabel('Gerações')
 ax.set_ylabel('Sharpe Ratio')
@@ -266,7 +267,7 @@ ax.legend()
 st.pyplot(fig)
 
 # Adicionar um botão com tooltip explicando o Sharpe Ratio
-st.button("Sharpe Ratio", help="O Sharpe Ratio mede o retorno ajustado ao risco de um portfólio. Quanto maior, melhor.")
+st.button("Sharpe Ratio", help="O Sharpe Ratio mede o retorno ajustado ao risco de um portfólio. Os melhores valores estão entre 2 e 3!")
 
 # Função para salvar o DataFrame em um novo CSV para download
 csv = distribuicao_df.to_csv(index=False)
